@@ -1,0 +1,16 @@
+{
+    "name": "SourceFramework.IOC",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d36cc4c2a148b47b38bc06b3d5666f58"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

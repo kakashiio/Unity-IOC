@@ -1,0 +1,21 @@
+{
+    "name": "io.unity3d.source.ioc",
+    "displayName": "Source Framework IOC",
+    "version": "1.0.0",
+    "unity": "2020.3",
+    "description": "Component in Source Framework - IOC Container for Unity",
+    "dependencies": {
+    },
+    "author": {
+        "name": "Kakashi",
+        "email": "john.cha@qq.com",
+        "url": "https://github.com/kakashiio/Unity-IOC"
+    },
+    "samples": [
+        {
+            "displayName": "Baisc usage about the ioc container",
+            "description": "Baisc usage about the ioc container",
+            "path": "Samples~/Basic"
+        }
+    ]
+}
