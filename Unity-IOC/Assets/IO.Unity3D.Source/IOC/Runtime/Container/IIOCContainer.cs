@@ -69,21 +69,21 @@ namespace IO.Unity3D.Source.IOC
         /// Find all objects managered in the container
         /// </summary>
         /// <returns></returns>
-        List<object> GetAllObjects();
+        List<Instance> GetAllInstances();
         
         /// <summary>
         /// Find all methods which with the attribute `A` in the container
         /// </summary>
         /// <typeparam name="A"></typeparam>
         /// <returns></returns>
-        List<BeanMethods> FindMethods<A>() where A : Attribute;
+        List<InstanceMethods> FindMethods<A>() where A : Attribute;
         
         /// <summary>
         /// Find all methods which with the attribute `attribute` in the container
         /// </summary>
         /// <param name="attribute"></param>
         /// <returns></returns>
-        List<BeanMethods> FindMethods(Type attribute);
+        List<InstanceMethods> FindMethods(Type attribute);
 
         /// <summary>
         /// Find methods which with the attribute `attribute` in the `obj`
@@ -92,6 +92,6 @@ namespace IO.Unity3D.Source.IOC
         /// <param name="attribute"></param>
         /// <param name="beanMethodList"></param>
         /// <returns></returns>
-        BeanMethods FindMethods(Object obj, Type attribute);
+        InstanceMethods FindMethods(Object obj, Type attribute);
     }
 }

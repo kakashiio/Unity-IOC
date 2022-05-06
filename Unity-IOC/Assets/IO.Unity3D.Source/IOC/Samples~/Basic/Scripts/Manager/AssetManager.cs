@@ -15,8 +15,13 @@ namespace IO.Unity3D.Source.IOC.Samples
     [IOCComponent]
     public class AssetManager
     {
+        public const string LOG_INSTANCE_NAME = "Logger4Asset";
+        
+        private float _WaitSeconds;
+        
         [Autowired] 
         private CoroutineManager _CoroutineManager;
+        [Qualifier(LOG_INSTANCE_NAME)]
         [Autowired] 
         private ILogManager _LogManager;
 
@@ -30,7 +35,7 @@ namespace IO.Unity3D.Source.IOC.Samples
             _LogManager.Log(LogLevel.Debug, "Loading {0}", assetPath);
             // Your load code here
             // Now just wait for some seconds for demo
-            yield return new WaitForSeconds(3);
+            yield return new WaitForSeconds(_WaitSeconds);
             T loadedAsset = default(T);
             _LogManager.Log(LogLevel.Debug, "Loaded {0} asset={1}", assetPath, loadedAsset);
             onLoaded?.Invoke(loadedAsset);
