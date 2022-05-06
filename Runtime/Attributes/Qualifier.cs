@@ -13,7 +13,9 @@ namespace IO.Unity3D.Source.IOC
     [AttributeUsage(AttributeTargets.Field|AttributeTargets.Property|AttributeTargets.Class)]
     public class Qualifier : Attribute
     {
-        public string Name;
+        public const string DEFAULT = "";
+        
+        public string Name = DEFAULT;
 
         public Qualifier(string name)
         {
