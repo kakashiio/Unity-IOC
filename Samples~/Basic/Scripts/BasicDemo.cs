@@ -29,9 +29,7 @@ namespace IO.Unity3D.Source.IOC.Samples
                 new TypeContainer(typeof(IOCComponent).Assembly)
             });
 
-            var iocContainer = new IOCContainerBuilder(typeContainer).SetConfiguration(config).Build();
-            GameObjectManager gameObjectManager = iocContainer.FindObjectOfType<GameObjectManager>();
-            gameObjectManager.Instantiate("", null);
+            new IOCContainerBuilder(typeContainer).SetConfiguration(config).Build();
         }
 
         private IOCContainerConfiguration _CreateConfig(float assetWaitSeconds, string logPrefix)

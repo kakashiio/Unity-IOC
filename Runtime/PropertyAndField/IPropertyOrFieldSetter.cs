@@ -1,5 +1,3 @@
-using IO.Unity3D.Source.Reflection;
-
 namespace IO.Unity3D.Source.IOC
 {
     //******************************************

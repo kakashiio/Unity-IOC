@@ -17,6 +17,8 @@ namespace IO.Unity3D.Source.IOC
         private ITypeContainer _TypeContainer;
         private List<Instance> _Instances = new List<Instance>();
         private HashSet<Instance> _InjectedObj = new HashSet<Instance>();
+        private HashSet<IInstanceLifeCycle> _InstanceLifeCycles = new HashSet<IInstanceLifeCycle>();
+        private HashSet<IContainerLifeCycle> _ContainerLifeCycles = new HashSet<IContainerLifeCycle>();
         
         private Dictionary<Type, Dictionary<string, Instance>> _FindCacheWithQualifier = new Dictionary<Type, Dictionary<string, Instance>>();
 
@@ -47,10 +49,31 @@ namespace IO.Unity3D.Source.IOC
                 _Instances.Add(_Instance(instanceInfo));
             }
             
+            // Trigger container's life cycle : OnContainerAware
+            foreach (var containerLifeCycle in _ContainerLifeCycles)
+            {
+                containerLifeCycle.OnContainerAware(this);
+            }
+            
             // Inject all type's field or property
             foreach (var instance in _Instances)
             {
+                var instanceLifeCycle = instance.Object as IInstanceLifeCycle;
+                if (instanceLifeCycle != null)
+                {
+                    instanceLifeCycle.BeforePropertiesOrFieldsSet();
+                }
                 Inject(instance);
+                
+                if (instanceLifeCycle != null)
+                {
+                    instanceLifeCycle.AfterPropertiesOrFieldsSet();
+                }
+            }
+            
+            foreach (var instanceLifeCycle in _InstanceLifeCycles)
+            {
+                instanceLifeCycle.AfterAllInstanceInit();
             }
         }
 
@@ -205,13 +228,8 @@ namespace IO.Unity3D.Source.IOC
 
         public void Destroy()
         {
-            foreach (var instance in _Instances)
+            foreach (var containerLifeCycle in _ContainerLifeCycles)
             {
-                var containerLifeCycle = instance.Object as IContainerLifeCycle;
-                if (containerLifeCycle == null)
-                {
-                    continue;
-                }
                 containerLifeCycle.OnContainerDestroy(this);
             }
         }
@@ -223,13 +241,13 @@ namespace IO.Unity3D.Source.IOC
             var instanceLifeCycle = obj as IInstanceLifeCycle;
             if (instanceLifeCycle != null)
             {
-                instanceLifeCycle.AfterInstance();
+                _InstanceLifeCycles.Add(instanceLifeCycle);
             }
 
             var containerLifeCycle = obj as IContainerLifeCycle;
             if (containerLifeCycle != null)
             {
-                containerLifeCycle.OnContainerAware(this);
+                _ContainerLifeCycles.Add(containerLifeCycle);
             }
             return new Instance(instanceInfo, obj);
         }

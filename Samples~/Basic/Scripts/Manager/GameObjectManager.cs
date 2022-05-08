@@ -11,7 +11,7 @@ namespace IO.Unity3D.Source.IOC.Samples
     // @Date: 2022-05-04 20:22
     //******************************************
     [IOCComponent]
-    public class GameObjectManager
+    public class GameObjectManager : IInstanceLifeCycle
     {
         [Autowired]
         private AssetManager _AssetManager;
@@ -30,6 +30,19 @@ namespace IO.Unity3D.Source.IOC.Samples
                 var go = GameObject.Instantiate(prefab);
                 onLoaded?.Invoke(go);
             });
+        }
+
+        public void BeforePropertiesOrFieldsSet()
+        {
+        }
+
+        public void AfterPropertiesOrFieldsSet()
+        {
+        }
+
+        public void AfterAllInstanceInit()
+        {
+            Instantiate("", null);
         }
     }
 }

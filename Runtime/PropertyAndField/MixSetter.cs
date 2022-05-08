@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Reflection;
 using IO.Unity3D.Source.Reflection;
-using UnityEngine;
 
 namespace IO.Unity3D.Source.IOC
 {
