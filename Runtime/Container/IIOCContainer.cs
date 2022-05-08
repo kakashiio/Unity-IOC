@@ -13,27 +13,29 @@ namespace IO.Unity3D.Source.IOC
     public interface IIOCContainer
     {
         /// <summary>
-        /// Create instance and inject all the fields and properties by the specified `type`
+        /// Create instance and inject all the fields and properties by the specified `instanceInfo`
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="instanceInfo"></param>
         /// <returns></returns>
-        object InstanceAndInject(Type type);
+        object InstanceAndInject(InstanceInfo instanceInfo);
 
         /// <summary>
         /// Create instance and inject all the fields and properties by the specified generic type `T`
         /// </summary>
+        /// <param name="propertyAndFieldInfos"></param>
+        /// <param name="qualifierName"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        T InstanceAndInject<T>();
+        T InstanceAndInject<T>(IReadOnlyList<ValueSetter> propertyAndFieldInfos, string qualifierName = Qualifier.DEFAULT);
 
         /// <summary>
-        /// Inject all the fields and properties by the specified `obj`.
+        /// Inject all the fields and properties by the specified `instance`.
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="instance"></param>
         /// <param name="recursive">
         /// If recursive == true, its fields will be recursive injected
         /// </param>
-        void Inject(object obj, bool recursive = false);
+        void Inject(Instance instance, bool recursive = false);
 
         /// <summary>
         /// Find the object by the specified `type` and `alias`
@@ -41,7 +43,7 @@ namespace IO.Unity3D.Source.IOC
         /// <param name="type"></param>
         /// <param name="alias"></param>
         /// <returns></returns>
-        object FindObjectOfType(Type type, string alias = null);
+        object FindObjectOfType(Type type, string alias = Qualifier.DEFAULT);
         
         /// <summary>
         /// Find the object by the specified generic type `T` and `alias`
@@ -49,7 +51,7 @@ namespace IO.Unity3D.Source.IOC
         /// <param name="alias"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        T FindObjectOfType<T>(string alias = null) where T : class;
+        T FindObjectOfType<T>(string alias = Qualifier.DEFAULT) where T : class;
         
         /// <summary>
         /// Find all objects by the specified `type`
@@ -93,5 +95,7 @@ namespace IO.Unity3D.Source.IOC
         /// <param name="beanMethodList"></param>
         /// <returns></returns>
         InstanceMethods FindMethods(Object obj, Type attribute);
+
+        void Destroy();
     }
 }

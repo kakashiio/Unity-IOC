@@ -9,12 +9,12 @@ namespace IO.Unity3D.Source.IOC
     //******************************************
     public class Instance
     {
-        public readonly string QualifierName;
+        public readonly InstanceInfo InstanceInfo;
         public readonly object Object;
 
-        public Instance(string qualifierName, object o)
+        public Instance(InstanceInfo instanceInfo, object o)
         {
-            QualifierName = qualifierName ?? Qualifier.DEFAULT;
+            InstanceInfo = instanceInfo;
             Object = o;
         }
     }

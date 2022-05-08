@@ -16,6 +16,7 @@ namespace IO.Unity3D.Source.IOC.Samples
     {
         private void Awake()
         {
+            // Demonstrate two ioc container in one project can have difference injection configuration
             _TestContainerWithConfig(_CreateConfig(3, "ContainerA"));
             _TestContainerWithConfig(_CreateConfig(1, "ContainerB"));
         }
@@ -35,16 +36,19 @@ namespace IO.Unity3D.Source.IOC.Samples
 
         private IOCContainerConfiguration _CreateConfig(float assetWaitSeconds, string logPrefix)
         {
-            return new IOCContainerConfiguration(new List<InstanceInfo>
+            return new IOCContainerConfiguration(new List<ConfigInstanceInfo>
             {
-                new InstanceInfo(typeof(LogManager), Qualifier.DEFAULT, null),
-                new InstanceInfo(typeof(LogManager), AssetManager.LOG_INSTANCE_NAME, new List<FieldOrPropertyInfo>
+                new ConfigInstanceInfo(typeof(LogManager), Qualifier.DEFAULT, null),
+                new ConfigInstanceInfo(typeof(LogManager), AssetManager.LOG_INSTANCE_NAME, new List<IPropertyOrFieldSetter>
                 {
-                    new FieldOrPropertyInfo("_Prefix", logPrefix)
+                    new ValueSetter("_Prefix", logPrefix)
                 }),
-                new InstanceInfo(typeof(AssetManager), Qualifier.DEFAULT, new List<FieldOrPropertyInfo>
+                new ConfigInstanceInfo(typeof(AssetManager), Qualifier.DEFAULT, new List<IPropertyOrFieldSetter>
                 {
-                    new FieldOrPropertyInfo("_WaitSeconds", assetWaitSeconds)
+                    new MixSetter(new List<AbsSinglePropertyOrFieldSetter>
+                    {
+                        new ValueSetter("_WaitSeconds", assetWaitSeconds)    
+                    })
                 })
             });
         }

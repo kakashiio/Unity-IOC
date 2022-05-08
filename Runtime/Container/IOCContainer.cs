@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using IO.Unity3D.Source.Reflection;
 
 namespace IO.Unity3D.Source.IOC
@@ -14,117 +13,105 @@ namespace IO.Unity3D.Source.IOC
     //******************************************
     public class IOCContainer : IIOCContainer
     {
+        private readonly static IOCContainerConfiguration EMPTY = new IOCContainerConfiguration();
         private ITypeContainer _TypeContainer;
         private List<Instance> _Instances = new List<Instance>();
-        private HashSet<object> _InjectedObj = new HashSet<object>();
+        private HashSet<Instance> _InjectedObj = new HashSet<Instance>();
         
-        private Dictionary<Type, Dictionary<string, object>> _FindCacheWithQualifier = new Dictionary<Type, Dictionary<string, object>>();
+        private Dictionary<Type, Dictionary<string, Instance>> _FindCacheWithQualifier = new Dictionary<Type, Dictionary<string, Instance>>();
 
         internal IOCContainer(ITypeContainer typeContainer, IOCContainerConfiguration configuration = null)
         {
             _TypeContainer = typeContainer;
-            _ProcessConfiguration(configuration);
+            configuration = configuration ?? EMPTY;
+            
+            var instanceInfos = new HashSet<InstanceInfo>();
+            
+            // Collect instance info from config
+            foreach (var instanceInfo in configuration.InstanceInfos)
+            {
+                instanceInfos.Add(instanceInfo);
+            }
 
+            // Collect instance info from auto inject
             var inheritedFromIOCComponent = Reflections.GetTypes(_TypeContainer, typeof(IOCComponent));
             var typesWithIOCComponent = Reflections.GetTypesWithAttributes(_TypeContainer, inheritedFromIOCComponent);
             foreach (var type in typesWithIOCComponent)
             {
-                if (configuration!=null && configuration.ContainsInstanceConfig(type))
-                {
-                    continue;
-                }
+                instanceInfos.Add(InstanceInfo.Create(type));
+            }
 
-                var instance = _Instance(type);
-                var qualifier = type.GetCustomAttribute(typeof(Qualifier)) as Qualifier;
-                _Instances.Add(new Instance(qualifier == null ? Qualifier.DEFAULT : qualifier.Name, instance));
+            // Instance
+            foreach (var instanceInfo in instanceInfos)
+            {
+                _Instances.Add(_Instance(instanceInfo));
             }
             
             // Inject all type's field or property
             foreach (var instance in _Instances)
             {
-                Inject(instance.Object);
+                Inject(instance);
             }
         }
 
-        private void _ProcessConfiguration(IOCContainerConfiguration configuration)
+        public object InstanceAndInject(InstanceInfo instanceInfo)
         {
-            if (configuration == null)
-            {
-                return;
-            }
-
-            if (configuration.BeanInfos != null)
-            {
-                foreach (var beanInfo in configuration.BeanInfos)
-                {
-                    var type = beanInfo.Key.Type;
-                    var instance = _Instance(type);
-                    foreach (var fieldOrPropertyInfo in beanInfo.Value.FieldOrPropertyInfos)
-                    {
-                        var propertyOrField = Reflections.GetPropertyOrField(type, fieldOrPropertyInfo.Name);
-                        if (propertyOrField == null)
-                        {
-                            throw new IOCConfigurationException("Can not found property or field `" + fieldOrPropertyInfo.Name + "` in " + type);
-                        }
-                        propertyOrField.SetValue(instance, fieldOrPropertyInfo.Value);
-                    }
-                    _Instances.Add(new Instance(beanInfo.Key.QualifierName, instance));
-                }
-            }
-        }
-
-        public object InstanceAndInject(Type type)
-        {
-            var instance = _Instance(type);
+            var instance = _Instance(instanceInfo);
             Inject(instance);
             return instance;
         }
 
-        public T InstanceAndInject<T>()
+        public T InstanceAndInject<T>(IReadOnlyList<ValueSetter> propertyAndFieldInfos, string qualifierName = Qualifier.DEFAULT)
         {
-            return (T) InstanceAndInject(typeof(T));
+            return (T) InstanceAndInject(new InstanceInfo(new InstanceID(typeof(T), qualifierName), propertyAndFieldInfos));
         }
 
-        public void Inject(object obj, bool recursive = false)
+        public void Inject(Instance instance, bool recursive = false)
         {
-            if (obj == null)
+            if (instance == null)
             {
                 return;
             }
 
-            if (obj.GetType().IsPrimitive)
+            var instanceObj = instance.Object;
+            var type = instanceObj.GetType();
+            if (type.IsPrimitive)
             {
                 return;
             }
 
             if (recursive)
             {
-                if (_InjectedObj.Contains(obj))
+                if (_InjectedObj.Contains(instance))
                 {
                     return;
                 }
-                _InjectedObj.Add(obj);    
+                _InjectedObj.Add(instance);    
             }
 
-            var propertiesOrFields = Reflections.GetPropertiesAndFields<Autowired>(obj);
-
-            foreach (var propertyOrField in propertiesOrFields)
+            var propertyAndFieldInfos = instance.InstanceInfo.PropertyOrFieldInfos;
+            foreach (var propertyAndFieldInfo in propertyAndFieldInfos)
             {
-                var qualifier = propertyOrField.GetCustomAttribute<Qualifier>();
-                var fieldValue = FindObjectOfType(propertyOrField.GetFieldOrPropertyType(), qualifier != null ? qualifier.Name : null);
-                propertyOrField.SetValue(obj, fieldValue);
-                
-                if (recursive)
-                {
-                    Inject(fieldValue, true);
-                }
+                propertyAndFieldInfo.Set(this, instance);
+            }
+
+            var instanceLifeCycle = instance as IInstanceLifeCycle;
+            if (instanceLifeCycle != null)
+            {
+                instanceLifeCycle.AfterPropertiesOrFieldsSet();
             }
         }
 
-        public object FindObjectOfType(Type type, string alias = null)
+        public object FindObjectOfType(Type type, string alias = Qualifier.DEFAULT)
+        {
+            Instance instance = _FindObjectOfType(type, alias);
+            return instance != null ? instance.Object : null;
+        }
+
+        private Instance _FindObjectOfType(Type type, string alias)
         {
             alias = alias ?? Qualifier.DEFAULT;
-            
+
             if (_FindCacheWithQualifier.ContainsKey(type))
             {
                 var qualifier2Instance = _FindCacheWithQualifier[type];
@@ -138,30 +125,30 @@ namespace IO.Unity3D.Source.IOC
             {
                 object obj = instance.Object;
                 var objType = obj.GetType();
-                if(type.IsAssignableFrom(objType))
+                if (type.IsAssignableFrom(objType))
                 {
-                    if (instance.QualifierName.Equals(alias))
+                    if (instance.InstanceInfo.InstanceID.QualifierName.Equals(alias))
                     {
-                        Dictionary<string, object> qualifier2Instance = null;
+                        Dictionary<string, Instance> qualifier2Instance;
                         if (_FindCacheWithQualifier.ContainsKey(type))
                         {
                             qualifier2Instance = _FindCacheWithQualifier[type];
                         }
                         else
                         {
-                            qualifier2Instance = new Dictionary<string, object>();
+                            qualifier2Instance = new Dictionary<string, Instance>();
                             _FindCacheWithQualifier.Add(type, qualifier2Instance);
                         }
-                        qualifier2Instance.Add(alias, obj);
-                        return obj;    
+                        qualifier2Instance.Add(alias, instance);
+                        return instance;
                     }
                 }
             }
-            
+
             return null;
         }
 
-        public T FindObjectOfType<T>(string alias = null) where T : class
+        public T FindObjectOfType<T>(string alias = Qualifier.DEFAULT) where T : class
         {
             return FindObjectOfType(typeof(T), alias) as T;
         }
@@ -216,9 +203,35 @@ namespace IO.Unity3D.Source.IOC
             return new InstanceMethods(obj, methods);
         }
 
-        private object _Instance(Type type)
+        public void Destroy()
         {
-            return Activator.CreateInstance(type);
+            foreach (var instance in _Instances)
+            {
+                var containerLifeCycle = instance.Object as IContainerLifeCycle;
+                if (containerLifeCycle == null)
+                {
+                    continue;
+                }
+                containerLifeCycle.OnContainerDestroy(this);
+            }
+        }
+
+        private Instance _Instance(InstanceInfo instanceInfo)
+        {
+            var obj = Activator.CreateInstance(instanceInfo.InstanceID.Type);
+            
+            var instanceLifeCycle = obj as IInstanceLifeCycle;
+            if (instanceLifeCycle != null)
+            {
+                instanceLifeCycle.AfterInstance();
+            }
+
+            var containerLifeCycle = obj as IContainerLifeCycle;
+            if (containerLifeCycle != null)
+            {
+                containerLifeCycle.OnContainerAware(this);
+            }
+            return new Instance(instanceInfo, obj);
         }
         
         private List<T> _FindObjectsOfType<T>(Type type, Func<object, T> mapper) where T : class

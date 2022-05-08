@@ -45,5 +45,10 @@ namespace IO.Unity3D.Source.IOC
         {
             return Type.GetHashCode() ^ QualifierName.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return $"Type={Type}, Name={QualifierName}";
+        }
     }
 }

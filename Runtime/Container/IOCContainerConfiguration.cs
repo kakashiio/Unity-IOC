@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -15,33 +14,28 @@ namespace IO.Unity3D.Source.IOC
     //******************************************
     public class IOCContainerConfiguration
     {
-        public readonly Dictionary<InstanceID, InstanceInfo> BeanInfos;
+        private static readonly HashSet<InstanceInfo> EMPTY = new HashSet<InstanceInfo>();
+        
+        public readonly HashSet<InstanceInfo> InstanceInfos = EMPTY;
 
-        public IOCContainerConfiguration(List<InstanceInfo> beanInfos)
+        public IOCContainerConfiguration(List<ConfigInstanceInfo> configInstanceInfos = null)
         {
-            if (beanInfos == null || beanInfos.Count == 0)
+            if (configInstanceInfos == null || configInstanceInfos.Count == 0)
             {
                 return;    
             }
             
-            BeanInfos = new Dictionary<InstanceID, InstanceInfo>();
-            foreach (InstanceInfo beanInfo in beanInfos)
+            InstanceInfos = new HashSet<InstanceInfo>();
+            foreach (ConfigInstanceInfo configInstanceInfo in configInstanceInfos)
             {
-                var beanID = new InstanceID(beanInfo.Type, beanInfo.QualifierName);
-                if (BeanInfos.ContainsKey(beanID))
+                var instanceInfo = InstanceInfo.Create(configInstanceInfo);
+                if (InstanceInfos.Contains(instanceInfo))
                 {
-                    Debug.LogError($"Found duplicate BeanInfo Type={beanID.Type} Qualifier={beanID.QualifierName}");
+                    Debug.LogError($"Found duplicate InstanceInfo {instanceInfo.InstanceID}");
                     continue;
                 }
-                BeanInfos.Add(beanID, beanInfo);
+                InstanceInfos.Add(instanceInfo);
             }
-        }
-
-        public bool ContainsInstanceConfig(Type type)
-        {
-            var qualifier = type.GetCustomAttributes(typeof(Qualifier)) as Qualifier;
-            var instanceID = new InstanceID(type, qualifier == null ? Qualifier.DEFAULT : qualifier.Name);
-            return BeanInfos.ContainsKey(instanceID);
         }
     }
 }
