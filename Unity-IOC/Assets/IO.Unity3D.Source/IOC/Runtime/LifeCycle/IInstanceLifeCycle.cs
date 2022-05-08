@@ -12,9 +12,9 @@ namespace IO.Unity3D.Source.IOC
     public interface IInstanceLifeCycle
     {
         /// <summary>
-        /// Invoked after this object is created and before the properties & fields are injected.
+        /// Invoked before this object's properties & fields are injected.
         /// </summary>
-        void AfterInstance();
+        void BeforePropertiesOrFieldsSet();
         
         /// <summary>
         /// Invoked after this object's properties & fields are injected. 
@@ -24,6 +24,6 @@ namespace IO.Unity3D.Source.IOC
         /// <summary>
         /// Invoked after all objects' properties & fields are injected.
         /// </summary>
-        void AfterAllInstanceSet();
+        void AfterAllInstanceInit();
     }
 }
