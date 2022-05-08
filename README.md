@@ -18,6 +18,22 @@ All the following package should be added.
 
 The basic usage of `IOCContainer` is in the sample script `BasicDemo.cs`
 
-# Guide
+# Features
+
+| Feature | Status |
+|--|--|
+|Auto inject field or property| `DONE` |
+|Inject field or property by configuration| `DONE` |
+|Instance's life cycle| `DONE` |
+|IOCContainer's life cycle| `DONE` |
+|Multi IOCContainers with difference configuration| `DONE` |
+|Configuration from file| `FUTURE` |
+|AOP| `FUTURE` |
+
+# Tutorial
+
+Would be writen some days ago.
+
+# Principle but not guide
 
 You chould read the article for more about the IOC [https://unity3d.io/2022/05/03/Unity-IOC/](https://unity3d.io/2022/05/03/Unity-IOC/)
