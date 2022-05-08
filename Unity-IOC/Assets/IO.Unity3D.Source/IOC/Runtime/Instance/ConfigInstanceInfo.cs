@@ -12,15 +12,15 @@ namespace IO.Unity3D.Source.IOC
     // @Email: john.cha@qq.com
     // @Date: 2022-05-06 21:48
     //******************************************
-    public class InstanceInfo
+    public class ConfigInstanceInfo
     {
-        private readonly static List<FieldOrPropertyInfo> EMPTY = new List<FieldOrPropertyInfo>(0);
+        private readonly static List<IPropertyOrFieldSetter> EMPTY = new List<IPropertyOrFieldSetter>(0);
         
         public readonly Type Type;
         public readonly string QualifierName;
-        public readonly List<FieldOrPropertyInfo> FieldOrPropertyInfos;
+        public readonly IReadOnlyList<IPropertyOrFieldSetter> FieldOrPropertyInfos;
 
-        public InstanceInfo(Type type, string qualifierName, List<FieldOrPropertyInfo> fieldOrPropertyInfos)
+        public ConfigInstanceInfo(Type type, string qualifierName, List<IPropertyOrFieldSetter> fieldOrPropertyInfos)
         {
             Type = type;
             QualifierName = qualifierName;
