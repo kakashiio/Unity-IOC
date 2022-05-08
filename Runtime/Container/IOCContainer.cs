@@ -255,12 +255,12 @@ namespace IO.Unity3D.Source.IOC
         private List<T> _FindObjectsOfType<T>(Type type, Func<object, T> mapper) where T : class
         {
             List<T> list = new List<T>();
-            foreach (object instance in _Instances)
+            foreach (Instance instance in _Instances)
             {
-                var objType = instance.GetType();
+                var objType = instance.InstanceInfo.InstanceID.Type;
                 if(type.IsAssignableFrom(objType))
                 {
-                    list.Add(mapper(instance));
+                    list.Add(mapper(instance.Object));
                 }
             }
             return list;
