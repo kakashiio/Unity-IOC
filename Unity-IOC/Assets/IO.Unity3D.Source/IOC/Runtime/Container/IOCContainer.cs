@@ -202,14 +202,14 @@ namespace IO.Unity3D.Source.IOC
 
             foreach (var instance in _Instances)
             {
-                var type = instance.GetType();
+                var type = instance.InstanceInfo.InstanceID.Type;
                 var methods = Reflections.GetMethods(type, attribute);
                 if (methods == null || methods.Count == 0)
                 {
                     continue;
                 }
                 
-                beanMethodses.Add(new InstanceMethods(instance, methods));
+                beanMethodses.Add(new InstanceMethods(instance.Object, methods));
             }
 
             return beanMethodses;
