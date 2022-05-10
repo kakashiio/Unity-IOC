@@ -16,6 +16,11 @@
             "displayName": "Baisc usage about the ioc container",
             "description": "Baisc usage about the ioc container",
             "path": "Samples~/Basic"
+        },
+        {
+            "displayName": "Use the ioc container with specifying types",
+            "description": "Totally specify the types you want to manager by the IOCContainer",
+            "path": "Samples~/SpecifyByHand"
         }
     ]
 }

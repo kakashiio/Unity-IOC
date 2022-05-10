@@ -15,12 +15,8 @@ namespace IO.Unity3D.Source.IOC
         private ITypeContainer _TypeContainer;
         private IOCContainerConfiguration _Configuration;
 
-        public IOCContainerBuilder(ITypeContainer typeContainer)
+        public IOCContainerBuilder(ITypeContainer typeContainer = null)
         {
-            if (typeContainer == null)
-            {
-                throw new ArgumentException("`" + nameof(typeContainer) + "` can not be null.");
-            }
             _TypeContainer = typeContainer;
         }
 
