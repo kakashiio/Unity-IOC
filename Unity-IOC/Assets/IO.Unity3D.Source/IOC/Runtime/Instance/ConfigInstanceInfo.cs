@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using IO.Unity3D.Source.Reflection;
 
 namespace IO.Unity3D.Source.IOC
 {
@@ -18,13 +19,62 @@ namespace IO.Unity3D.Source.IOC
         
         public readonly Type Type;
         public readonly string QualifierName;
-        public readonly IReadOnlyList<IPropertyOrFieldSetter> FieldOrPropertyInfos;
 
-        public ConfigInstanceInfo(Type type, string qualifierName, List<IPropertyOrFieldSetter> fieldOrPropertyInfos)
+        private List<IPropertyOrFieldSetter> _PropertyOrFieldInfos;
+        public IReadOnlyList<IPropertyOrFieldSetter> PropertyOrFieldInfos => _PropertyOrFieldInfos;
+        
+
+        public ConfigInstanceInfo(Type type, string qualifierName, List<IPropertyOrFieldSetter> propertyOrFieldInfos, bool autoInjectMissingPropertyOrFieldInfo = true)
         {
             Type = type;
             QualifierName = qualifierName;
-            FieldOrPropertyInfos = fieldOrPropertyInfos ?? EMPTY;
+            _PropertyOrFieldInfos = propertyOrFieldInfos ?? EMPTY;
+            
+            if (autoInjectMissingPropertyOrFieldInfo)
+            {
+                _CollectAutoInjectPropertyOrFieldInfos();
+            }
+        }
+
+        private void _CollectAutoInjectPropertyOrFieldInfos()
+        {
+            if (_PropertyOrFieldInfos == EMPTY)
+            {
+                _PropertyOrFieldInfos = new List<IPropertyOrFieldSetter>();
+            }
+
+            var propertiesAndFields = Reflections.GetPropertiesAndFields<Autowired>(Type);
+            foreach (var propertiesAndField in propertiesAndFields)
+            {
+                var foundSetting = _PropertyOrFieldInfos.Find((p) =>
+                {
+                    var absSinglePropertyOrFieldSetter = p as AbsSinglePropertyOrFieldSetter;
+                    if (absSinglePropertyOrFieldSetter == null)
+                    {
+                        throw new Exception("AutoInjectMissingPropertyOrFieldInfo only support the `propertyOrFieldInfos` which contains all AbsSinglePropertyOrFieldSetter setter.");
+                    }
+
+                    return absSinglePropertyOrFieldSetter.Name.Equals(propertiesAndField.Name);
+                });
+                if (foundSetting != null)
+                {
+                    continue;
+                }
+                var fieldQualifier = propertiesAndField.GetCustomAttribute<Qualifier>();
+                _PropertyOrFieldInfos.Add(new ReferenceSetter(propertiesAndField.Name, null, fieldQualifier == null ? Qualifier.DEFAULT : fieldQualifier.Name));
+            }
+        }
+
+        public ConfigInstanceInfo(Type type, List<IPropertyOrFieldSetter> fieldOrPropertyInfos) : this(type, Qualifier.DEFAULT, fieldOrPropertyInfos)
+        {
+        }
+        
+        public ConfigInstanceInfo(Type type, string qualifierName) : this(type, qualifierName, null)
+        {
+        }
+        
+        public ConfigInstanceInfo(Type type) : this(type, Qualifier.DEFAULT, null)
+        {
         }
     }
 }

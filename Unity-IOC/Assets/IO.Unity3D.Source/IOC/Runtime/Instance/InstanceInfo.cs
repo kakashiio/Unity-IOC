@@ -26,7 +26,7 @@ namespace IO.Unity3D.Source.IOC
         public static InstanceInfo Create(ConfigInstanceInfo configInstanceInfo)
         {
             var instanceID = new InstanceID(configInstanceInfo.Type, configInstanceInfo.QualifierName);
-            var instanceInfo = new InstanceInfo(instanceID, configInstanceInfo.FieldOrPropertyInfos);
+            var instanceInfo = new InstanceInfo(instanceID, configInstanceInfo.PropertyOrFieldInfos);
             return instanceInfo;
         }
 

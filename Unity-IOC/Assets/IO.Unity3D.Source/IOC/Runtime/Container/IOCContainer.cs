@@ -14,7 +14,6 @@ namespace IO.Unity3D.Source.IOC
     public class IOCContainer : IIOCContainer
     {
         private readonly static IOCContainerConfiguration EMPTY = new IOCContainerConfiguration();
-        private ITypeContainer _TypeContainer;
         private List<Instance> _Instances = new List<Instance>();
         private HashSet<Instance> _InjectedObj = new HashSet<Instance>();
         private HashSet<IInstanceLifeCycle> _InstanceLifeCycles = new HashSet<IInstanceLifeCycle>();
@@ -24,7 +23,6 @@ namespace IO.Unity3D.Source.IOC
 
         internal IOCContainer(ITypeContainer typeContainer, IOCContainerConfiguration configuration = null)
         {
-            _TypeContainer = typeContainer;
             configuration = configuration ?? EMPTY;
             
             var instanceInfos = new HashSet<InstanceInfo>();
@@ -36,12 +34,16 @@ namespace IO.Unity3D.Source.IOC
             }
 
             // Collect instance info from auto inject
-            var inheritedFromIOCComponent = Reflections.GetTypes(_TypeContainer, typeof(IOCComponent));
-            var typesWithIOCComponent = Reflections.GetTypesWithAttributes(_TypeContainer, inheritedFromIOCComponent);
-            foreach (var type in typesWithIOCComponent)
+            if (typeContainer != null)
             {
-                instanceInfos.Add(InstanceInfo.Create(type));
+                var inheritedFromIOCComponent = Reflections.GetTypes(typeContainer, typeof(IOCComponent));
+                var typesWithIOCComponent = Reflections.GetTypesWithAttributes(typeContainer, inheritedFromIOCComponent);
+                foreach (var type in typesWithIOCComponent)
+                {
+                    instanceInfos.Add(InstanceInfo.Create(type));
+                }                
             }
+
 
             // Instance
             foreach (var instanceInfo in instanceInfos)
