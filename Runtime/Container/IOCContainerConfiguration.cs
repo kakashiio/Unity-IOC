@@ -16,6 +16,8 @@ namespace IO.Unity3D.Source.IOC
     {
         public readonly HashSet<InstanceInfo> InstanceInfos = new HashSet<InstanceInfo>();
 
+        public readonly List<Instance> Instances = new List<Instance>();
+
         public IOCContainerConfiguration(List<ConfigInstanceInfo> configInstanceInfos = null)
         {
             if (configInstanceInfos == null || configInstanceInfos.Count == 0)
@@ -27,6 +29,20 @@ namespace IO.Unity3D.Source.IOC
             {
                 AddConfigInstanceInfo(configInstanceInfo);
             }
+        }
+
+        public IOCContainerConfiguration AddInstance(Instance instance)
+        {
+            Instances.Add(instance);
+            return this;
+        }
+
+        public IOCContainerConfiguration AddInstance(object obj)
+        {
+            var configInstanceInfo = new ConfigInstanceInfo(obj.GetType());
+            var instance = new Instance(InstanceInfo.Create(configInstanceInfo), obj);
+            Instances.Add(instance);
+            return this;
         }
 
         public IOCContainerConfiguration AddConfigInstanceInfo<T>()

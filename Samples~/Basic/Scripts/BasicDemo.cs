@@ -47,8 +47,8 @@ namespace IO.Unity3D.Source.IOC.Samples
                     {
                         new ValueSetter("_WaitSeconds", assetWaitSeconds)    
                     })
-                })
-            });
+                }, false)
+            }).AddInstance(new CustomManager());
         }
     }
 }

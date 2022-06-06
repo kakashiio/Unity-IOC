@@ -96,6 +96,18 @@ namespace IO.Unity3D.Source.IOC
         /// <returns></returns>
         InstanceMethods FindMethods(Object obj, Type attribute);
 
+        /// <summary>
+        /// Add the specified external obj into the IOCContainer as the managed instance
+        /// </summary>
+        /// <param name="obj"></param>
+        void Manage(object obj);
+
+        /// <summary>
+        /// /// Add the specified external instance into the IOCContainer as the managed instance
+        /// </summary>
+        /// <param name="instance"></param>
+        void Manage(Instance instance);
+
         void Destroy();
     }
 }
