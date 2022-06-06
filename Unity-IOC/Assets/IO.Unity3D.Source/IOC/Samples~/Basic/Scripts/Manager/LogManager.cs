@@ -15,6 +15,9 @@ namespace IO.Unity3D.Source.IOC.Samples
     {
         private string _Prefix;
         private LogLevel _LogLevel = LogLevel.Debug;
+
+        [Autowired]
+        private CustomManager _CustomManager;
         
         public void Log(LogLevel level, string templte, params object[] args)
         {
@@ -23,7 +26,7 @@ namespace IO.Unity3D.Source.IOC.Samples
                 return;
             }
             string msg = args == null || args.Length == 0 ? templte : string.Format(templte, args);
-            msg = $"{_Prefix} [{level}] Frame={Time.frameCount} Time={Time.time} -- {msg}";
+            msg = $"{_CustomManager.LogPrefix()} {_Prefix} [{level}] Frame={Time.frameCount} Time={Time.time} -- {msg}";
             switch (level)
             {
                 case LogLevel.Debug:

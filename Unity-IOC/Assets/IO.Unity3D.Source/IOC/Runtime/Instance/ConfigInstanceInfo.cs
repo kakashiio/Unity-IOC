@@ -51,7 +51,7 @@ namespace IO.Unity3D.Source.IOC
                     var absSinglePropertyOrFieldSetter = p as AbsSinglePropertyOrFieldSetter;
                     if (absSinglePropertyOrFieldSetter == null)
                     {
-                        throw new Exception("AutoInjectMissingPropertyOrFieldInfo only support the `propertyOrFieldInfos` which contains all AbsSinglePropertyOrFieldSetter setter.");
+                        throw new Exception($"AutoInjectMissingPropertyOrFieldInfo only support the `propertyOrFieldInfos` which contains all AbsSinglePropertyOrFieldSetter setter. Type={Type}");
                     }
 
                     return absSinglePropertyOrFieldSetter.Name.Equals(propertiesAndField.Name);

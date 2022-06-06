@@ -44,11 +44,15 @@ namespace IO.Unity3D.Source.IOC
                 }                
             }
 
-
             // Instance
             foreach (var instanceInfo in instanceInfos)
             {
-                _Instances.Add(_Instance(instanceInfo));
+                Manage(_Instance(instanceInfo));
+            }
+            
+            foreach (var instance in configuration.Instances)
+            {
+                Manage(instance);
             }
             
             // Trigger container's life cycle : OnContainerAware
@@ -77,6 +81,18 @@ namespace IO.Unity3D.Source.IOC
             {
                 instanceLifeCycle.AfterAllInstanceInit();
             }
+        }
+
+        public void Manage(object obj)
+        {
+            var configInstanceInfo = new ConfigInstanceInfo(obj.GetType());
+            var instance = new Instance(InstanceInfo.Create(configInstanceInfo), obj);
+            Manage(instance);
+        }
+
+        public void Manage(Instance instance)
+        {
+            _Instances.Add(instance);
         }
 
         public object InstanceAndInject(InstanceInfo instanceInfo)
